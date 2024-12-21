@@ -1,0 +1,56 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  walletAddress String?   @unique
+  stakes        Stake[]
+  rewards       Reward[]
+  dashboard     Dashboard?
+}
+
+model Stake {
+  id        String   @id @default(cuid())
+  amount    Float
+  startDate DateTime @default(now())
+  endDate   DateTime?
+  status    StakeStatus @default(ACTIVE)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model Reward {
+  id        String   @id @default(cuid())
+  amount    Float
+  claimedAt DateTime @default(now())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+}
+
+model Dashboard {
+  id              String   @id @default(cuid())
+  totalStaked     Float    @default(0)
+  totalRewards    Float    @default(0)
+  lastUpdated     DateTime @default(now())
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id])
+}
+
+enum StakeStatus {
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
